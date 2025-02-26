@@ -7,6 +7,7 @@ import config from "../../config";
 import { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { sendEmail } from "../../utils/sendEmail";
+import jwt from "jsonwebtoken";
 
 const loginUser = async (payload: Partial<TUser>) => {
   const { email, password } = payload;
@@ -112,9 +113,35 @@ const forgetPassword = async (email: string) => {
   return resetUILink;
 };
 
+const resetPassword = async (
+  payload: { email: string; newPassword: string },
+  token: string
+) => {
+  const user = await User.findOne({ email: payload?.email });
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User doesn't exist");
+  }
+  const decoded = jwt.verify(
+    token,
+    config.jwt_access_secret as string
+  ) as JwtPayload;
+  if (payload.email !== decoded.email) {
+    throw new AppError(StatusCodes.FORBIDDEN, "You are forbidden");
+  }
+  const newHashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+  await User.findByIdAndUpdate(user._id, {
+    password: newHashedPassword,
+    passwordChangedAt: new Date(),
+  });
+};
+
 export const AuthService = {
   loginUser,
   changePassword,
   refreshToken,
   forgetPassword,
+  resetPassword,
 };
