@@ -6,6 +6,7 @@ import { createToken, verifyToken } from "./auth.utils";
 import config from "../../config";
 import { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { sendEmail } from "../../utils/sendEmail";
 
 const loginUser = async (payload: Partial<TUser>) => {
   const { email, password } = payload;
@@ -91,8 +92,29 @@ const refreshToken = async (token: string) => {
   };
 };
 
+const forgetPassword = async (email: string) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User doesn't exist");
+  }
+  const jwtPayload = {
+    _id: user._id,
+    email: user.email,
+  };
+  const resetToken = createToken(
+    jwtPayload,
+    config.jwt_access_secret as string,
+    0.00694
+  );
+  const resetUILink = `${config.reset_pass_ui_link}?id=${user._id}&token=${resetToken}`;
+  sendEmail(user.email, resetUILink);
+  console.log(resetUILink);
+  return resetUILink;
+};
+
 export const AuthService = {
   loginUser,
   changePassword,
   refreshToken,
+  forgetPassword,
 };
