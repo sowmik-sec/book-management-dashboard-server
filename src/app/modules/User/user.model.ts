@@ -15,6 +15,9 @@ const userSchema = new Schema<TUser, UserModel>(
       required: true,
       select: 0,
     },
+    passwordChangedAt: {
+      type: Date,
+    },
     name: {
       firstName: {
         type: String,
@@ -55,6 +58,15 @@ userSchema.statics.isPasswordMatched = async function (
   hashedPassword
 ) {
   return await bcrypt.compare(password, hashedPassword);
+};
+
+userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
+  passwordChangedTimestamp: Date,
+  jwtIssuedTimestamp: number
+) {
+  const passwordChangedTime =
+    new Date(passwordChangedTimestamp).getTime() / 1000;
+  return passwordChangedTime > jwtIssuedTimestamp;
 };
 
 export const User = model<TUser, UserModel>("User", userSchema);

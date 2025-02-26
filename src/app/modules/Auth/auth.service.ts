@@ -4,6 +4,8 @@ import { TUser } from "../User/user.interface";
 import { User } from "../User/user.model";
 import { createToken } from "./auth.utils";
 import config from "../../config";
+import { JwtPayload } from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 const loginUser = async (payload: Partial<TUser>) => {
   const { email, password } = payload;
@@ -39,6 +41,30 @@ const loginUser = async (payload: Partial<TUser>) => {
   };
 };
 
+const changePassword = async (
+  userData: JwtPayload,
+  payload: { oldPassword: string; newPassword: string }
+) => {
+  const user = await User.findById(userData._id).select("+password");
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User doesn't exist");
+  }
+  const isPasswordMatched = await User.isPasswordMatched(
+    payload.oldPassword,
+    user.password
+  );
+  if (!isPasswordMatched) {
+    throw new AppError(StatusCodes.FORBIDDEN, "Old password doesn't match");
+  }
+  const hashedPassword = await bcrypt.hash(
+    payload.newPassword,
+    Number(config.bcrypt_salt_rounds)
+  );
+  await User.findByIdAndUpdate(userData._id, { password: hashedPassword });
+  return null;
+};
+
 export const AuthService = {
   loginUser,
+  changePassword,
 };
