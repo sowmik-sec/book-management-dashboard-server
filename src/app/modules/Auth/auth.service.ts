@@ -2,7 +2,7 @@ import { StatusCodes } from "http-status-codes";
 import AppError from "../../errors/AppError";
 import { TUser } from "../User/user.interface";
 import { User } from "../User/user.model";
-import { createToken } from "./auth.utils";
+import { createToken, verifyToken } from "./auth.utils";
 import config from "../../config";
 import { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
@@ -64,7 +64,35 @@ const changePassword = async (
   return null;
 };
 
+const refreshToken = async (token: string) => {
+  const decoded = verifyToken(token, config.jwt_refresh_secret as string);
+  const { _id, iat } = decoded as JwtPayload;
+  const user = await User.findById(_id);
+  if (!user) {
+    throw new AppError(StatusCodes.NOT_FOUND, "User doesn't exist");
+  }
+  if (
+    user.passwordChangedAt &&
+    User.isJWTIssuedBeforePasswordChanged(user.passwordChangedAt, Number(iat))
+  ) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, "You are not authorized");
+  }
+  const jwtPayload = {
+    _id: user._id,
+    email: user.email,
+  };
+  const accessToken = createToken(
+    jwtPayload,
+    config.jwt_access_secret as string,
+    Number(config.jwt_expires_in)
+  );
+  return {
+    accessToken,
+  };
+};
+
 export const AuthService = {
   loginUser,
   changePassword,
+  refreshToken,
 };
