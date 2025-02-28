@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { BookFormat } from "./book.constant";
 
 export type TBook = {
@@ -13,4 +14,5 @@ export type TBook = {
   language: string;
   format: BookFormat;
   pageCount: number;
+  createdBy: Types.ObjectId;
 };
