@@ -27,7 +27,7 @@ const bookSchema = new Schema<TBook>(
     },
     isbn: {
       type: String,
-      required: true,
+      // required: true,
       // match: [/^(?:\d-?){9}[\dX]$/, "Invalid ISBN format"],
     },
     language: {
