@@ -1,6 +1,22 @@
 import { model, Schema, Types } from "mongoose";
 import { BookFormat } from "./book.constant";
-import { TBook } from "./book.interface";
+import { TBook, TGenre } from "./book.interface";
+
+const genreSchema = new Schema<TGenre>(
+  {
+    genre: {
+      type: String,
+      required: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    _id: false,
+  }
+);
 
 const bookSchema = new Schema<TBook>(
   {
@@ -37,12 +53,12 @@ const bookSchema = new Schema<TBook>(
     series: {
       type: String,
     },
-    genre: {
-      type: [String],
+    genres: {
+      type: [genreSchema],
       required: true,
       validate: [
         {
-          validator: (genres: string[]) => genres.length > 0,
+          validator: (genres: TGenre[]) => genres.length > 0,
           message: "At least one genre required",
         },
       ],

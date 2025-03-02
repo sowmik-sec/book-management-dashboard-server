@@ -12,6 +12,13 @@ router.post(
   BookControllers.createBook
 );
 
+router.patch(
+  "/:id",
+  auth(),
+  validateRequest(BookValidation.updateBookValidationSchema),
+  BookControllers.updateBook
+);
+
 router.delete(
   "/delete-multiple-books",
   auth(),

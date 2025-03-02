@@ -23,6 +23,19 @@ const deleteBook = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const updateBook = catchAsync(async (req: Request, res: Response) => {
+  const result = await BookServices.updateBookIntoDB(
+    req.user,
+    req.params.id,
+    req.body
+  );
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Book Updated successfully",
+    data: result,
+  });
+});
 const deleteMultipleBooks = catchAsync(async (req: Request, res: Response) => {
   const { bookIds } = req.body;
   if (!bookIds) {
@@ -42,6 +55,7 @@ const deleteMultipleBooks = catchAsync(async (req: Request, res: Response) => {
 
 export const BookControllers = {
   createBook,
+  updateBook,
   deleteBook,
   deleteMultipleBooks,
 };

@@ -11,6 +11,90 @@ const createBookIntoDB = async (createdBy: JwtPayload, payload: TBook) => {
   return result;
 };
 
+const updateBookIntoDB = async (
+  createdBy: JwtPayload,
+  bookId: string,
+  payload: Partial<TBook>
+) => {
+  if (!mongoose.Types.ObjectId.isValid(bookId)) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Invalid book ID");
+  }
+  if (!createdBy._id) {
+    throw new AppError(StatusCodes.UNAUTHORIZED, "Invalid user data");
+  }
+  const { genres, ...bookData } = payload;
+  const deleteGenre = genres
+    ? genres
+        .filter((genre) => genre.isDeleted && genre.genre)
+        .map((el) => el.genre)
+    : [];
+  const addGenre = genres
+    ? genres.filter((genre) => genre.genre && !genre.isDeleted)
+    : [];
+  let updatedBook = null;
+  // Apply bookData update if present
+  if (Object.keys(bookData).length > 0) {
+    updatedBook = await Book.findOneAndUpdate(
+      { _id: bookId, createdBy: createdBy._id },
+      { $set: bookData },
+      { new: true, runValidators: true }
+    );
+    if (!updatedBook) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        "Book not found or not authorized"
+      );
+    }
+  }
+  if (deleteGenre.length > 0) {
+    updatedBook = await Book.findOneAndUpdate(
+      {
+        _id: bookId,
+        createdBy: createdBy._id,
+      },
+      {
+        $pull: { genres: { genre: { $in: deleteGenre } } },
+      },
+      { new: true, runValidators: true }
+    );
+    if (!updatedBook) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        "Book not found or not authorized"
+      );
+    }
+  }
+  if (addGenre.length > 0) {
+    updatedBook = await Book.findOneAndUpdate(
+      {
+        _id: bookId,
+        createdBy: createdBy._id,
+      },
+      {
+        $addToSet: { genres: { $each: addGenre } },
+      },
+      { new: true, runValidators: true }
+    );
+    if (!updatedBook) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        "Book not found or not authorized"
+      );
+    }
+  }
+  // If no updates were applied, fetch the current book
+  if (!updatedBook) {
+    updatedBook = await Book.findOne({ _id: bookId, createdBy: createdBy._id });
+    if (!updatedBook) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        "Book not found or not authorized"
+      );
+    }
+  }
+  return updatedBook;
+};
+
 const deleteBookFromDB = async (createdBy: JwtPayload, id: string) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError(StatusCodes.BAD_REQUEST, "Invalid book ID");
@@ -50,4 +134,5 @@ export const BookServices = {
   createBookIntoDB,
   deleteBookFromDB,
   deleteMultipleBooksFromDB,
+  updateBookIntoDB,
 };
