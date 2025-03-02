@@ -29,7 +29,25 @@ const deleteBookFromDB = async (createdBy: JwtPayload, id: string) => {
   return result;
 };
 
+const deleteMultipleBooksFromDB = async (
+  createdBy: JwtPayload,
+  bookIds: string[]
+) => {
+  if (
+    !Array.isArray(bookIds) ||
+    bookIds.some((id) => !mongoose.Types.ObjectId.isValid(id))
+  ) {
+    throw new AppError(StatusCodes.BAD_REQUEST, "Invalid book IDs");
+  }
+  const result = await Book.deleteMany({
+    _id: { $in: bookIds },
+    createdBy: createdBy._id,
+  });
+  return result;
+};
+
 export const BookServices = {
   createBookIntoDB,
   deleteBookFromDB,
+  deleteMultipleBooksFromDB,
 };

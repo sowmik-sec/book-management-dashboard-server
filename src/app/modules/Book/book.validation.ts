@@ -22,6 +22,15 @@ const createBookValidationSchema = z.object({
   }),
 });
 
+const deleteMultipleBooksValidationSchema = z.object({
+  body: z.object({
+    bookIds: z
+      .array(z.string().min(1, "IDs cannot be empty"))
+      .nonempty("At least one Book ID is required"),
+  }),
+});
+
 export const BookValidation = {
   createBookValidationSchema,
+  deleteMultipleBooksValidationSchema,
 };

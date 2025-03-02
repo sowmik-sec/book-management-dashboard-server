@@ -11,6 +11,13 @@ router.post(
   validateRequest(BookValidation.createBookValidationSchema),
   BookControllers.createBook
 );
+
+router.delete(
+  "/delete-multiple-books",
+  auth(),
+  validateRequest(BookValidation.deleteMultipleBooksValidationSchema),
+  BookControllers.deleteMultipleBooks
+);
 router.delete("/:id", auth(), BookControllers.deleteBook);
 
 export const BookRoutes = router;

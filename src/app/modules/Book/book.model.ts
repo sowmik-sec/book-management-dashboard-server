@@ -67,7 +67,12 @@ const bookSchema = new Schema<TBook>(
       required: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
+  }
 );
 
 export const Book = model<TBook>("Book", bookSchema);
