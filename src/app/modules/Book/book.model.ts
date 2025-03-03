@@ -80,6 +80,7 @@ const bookSchema = new Schema<TBook>(
     },
     createdBy: {
       type: Schema.Types.ObjectId,
+      ref: "User",
       required: true,
     },
   },
