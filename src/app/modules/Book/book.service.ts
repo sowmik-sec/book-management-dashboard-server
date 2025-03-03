@@ -4,11 +4,35 @@ import { Book } from "./book.model";
 import AppError from "../../errors/AppError";
 import { StatusCodes } from "http-status-codes";
 import mongoose from "mongoose";
+import { bookSearchableFields } from "./book.constant";
+import QueryBuilder from "../../builder/QueryBuilder";
 
 const createBookIntoDB = async (createdBy: JwtPayload, payload: TBook) => {
   payload.createdBy = createdBy._id;
   const result = await Book.create(payload);
   return result;
+};
+
+const getFilteredBooksFromDB = async (
+  createdBy: JwtPayload,
+  query: Record<string, unknown>
+) => {
+  const bookQuery = new QueryBuilder(
+    Book.find({ createdBy: createdBy._id }).populate("createdBy"),
+    query
+  )
+    .search(bookSearchableFields)
+    .filter()
+    .sort()
+    .paginate()
+    .fields();
+  const meta = await bookQuery.countTotal();
+  const result = await bookQuery.modelQuery;
+  console.log(bookQuery.modelQuery.getFilter());
+  return {
+    meta,
+    result,
+  };
 };
 
 const updateBookIntoDB = async (
@@ -132,6 +156,7 @@ const deleteMultipleBooksFromDB = async (
 
 export const BookServices = {
   createBookIntoDB,
+  getFilteredBooksFromDB,
   deleteBookFromDB,
   deleteMultipleBooksFromDB,
   updateBookIntoDB,

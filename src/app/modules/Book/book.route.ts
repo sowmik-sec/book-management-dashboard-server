@@ -27,4 +27,6 @@ router.delete(
 );
 router.delete("/:id", auth(), BookControllers.deleteBook);
 
+router.get("/", auth(), BookControllers.getFilteredBooks);
+
 export const BookRoutes = router;

@@ -14,6 +14,15 @@ const createBook = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getFilteredBooks = catchAsync(async (req: Request, res: Response) => {
+  const result = await BookServices.getFilteredBooksFromDB(req.user, req.query);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Book retrieved successfully",
+    data: result,
+  });
+});
 const deleteBook = catchAsync(async (req: Request, res: Response) => {
   const result = await BookServices.deleteBookFromDB(req.user, req.params.id);
   sendResponse(res, {
@@ -55,6 +64,7 @@ const deleteMultipleBooks = catchAsync(async (req: Request, res: Response) => {
 
 export const BookControllers = {
   createBook,
+  getFilteredBooks,
   updateBook,
   deleteBook,
   deleteMultipleBooks,
