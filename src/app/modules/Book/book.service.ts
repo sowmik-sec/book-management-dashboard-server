@@ -18,7 +18,9 @@ const getFilteredBooksFromDB = async (
   query: Record<string, unknown>
 ) => {
   const bookQuery = new QueryBuilder(
-    Book.find({ createdBy: createdBy._id }).populate("createdBy"),
+    Book.find({ createdBy: createdBy._id, quantity: { $gt: 0 } }).populate(
+      "createdBy"
+    ),
     query
   )
     .search(bookSearchableFields)
@@ -28,7 +30,6 @@ const getFilteredBooksFromDB = async (
     .fields();
   const meta = await bookQuery.countTotal();
   const result = await bookQuery.modelQuery;
-  console.log(bookQuery.modelQuery.getFilter());
   return {
     meta,
     result,
