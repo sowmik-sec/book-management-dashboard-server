@@ -35,6 +35,9 @@ const userSchema = new Schema<TUser, UserModel>(
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
   }
 );
 

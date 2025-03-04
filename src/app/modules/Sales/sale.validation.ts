@@ -21,12 +21,8 @@ const createSaleZodSchema = z.object({
       .datetime({ message: "Invalid date format" })
       .default(() => new Date().toISOString()) // Default to current ISO date
       .or(z.date()) // Allow Date objects as well
-      .transform((val) => new Date(val)), // Transform to Date object
-    seller: z
-      .string({ required_error: "Seller ID is required" })
-      .refine((val) => Types.ObjectId.isValid(val), {
-        message: "Invalid Seller ID format",
-      }),
+      .transform((val) => new Date(val)) // Transform to Date object
+      .optional(),
   }),
 });
 

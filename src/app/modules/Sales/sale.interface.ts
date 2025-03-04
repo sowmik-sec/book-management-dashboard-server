@@ -4,6 +4,6 @@ export type TSale = {
   book: Types.ObjectId;
   quantity: number;
   buyer: string;
-  saleDate: Date;
+  saleDate?: Date;
   seller: Types.ObjectId;
 };
