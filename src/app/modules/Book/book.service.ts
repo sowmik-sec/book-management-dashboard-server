@@ -36,6 +36,15 @@ const getFilteredBooksFromDB = async (
   };
 };
 
+const getSingleBookFromDB = async (createdBy: JwtPayload, bookId: string) => {
+  const result = await Book.findOne({
+    createdBy: createdBy._id,
+    _id: bookId,
+    quantity: { $gt: 0 },
+  }).populate("createdBy");
+  return result;
+};
+
 const updateBookIntoDB = async (
   createdBy: JwtPayload,
   bookId: string,
@@ -158,6 +167,7 @@ const deleteMultipleBooksFromDB = async (
 export const BookServices = {
   createBookIntoDB,
   getFilteredBooksFromDB,
+  getSingleBookFromDB,
   deleteBookFromDB,
   deleteMultipleBooksFromDB,
   updateBookIntoDB,
