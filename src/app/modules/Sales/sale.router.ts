@@ -12,4 +12,6 @@ router.post(
   SaleControllers.createSale
 );
 
+router.get("/", auth(), SaleControllers.getSalesHistory);
+
 export const SaleRoutes = router;
